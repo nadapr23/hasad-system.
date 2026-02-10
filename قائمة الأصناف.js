@@ -36,6 +36,7 @@ function renderCategoryFilters() {
 function renderTable() {
     const tableBody = document.getElementById('inventory-table');
     if(!tableBody) return;
+    
     let filtered;
     if (activeFilter === 'outOfStock') filtered = products.filter(p => parseInt(p.qty || 0) === 0);
     else if (activeFilter === 'الكل') filtered = products;
@@ -44,17 +45,69 @@ function renderTable() {
     tableBody.innerHTML = filtered.length === 0 ? `<tr><td colspan="6" class="p-24 text-center text-slate-400">لا توجد منتجات</td></tr>` : 
         filtered.map(p => {
             const idx = products.indexOf(p);
-            return `<tr class="border-b border-slate-50 hover:bg-slate-50">
+            return `<tr class="border-b border-slate-50 hover:bg-slate-50 transition-all">
                 <td class="p-6 font-bold text-[#1e293b]">${p.name}</td>
                 <td class="p-6 text-slate-500">${p.category}</td>
                 <td class="p-6 text-slate-400 font-mono">${p.barcode || '---'}</td>
                 <td class="p-6 font-bold text-[#10b981]">${p.price} ر.س</td>
-                <td class="p-6"><input type="number" onchange="updateQty(${idx}, this.value)" value="${p.qty || 0}" class="w-20 p-2 bg-slate-50 border rounded-xl text-center outline-none focus:border-[#10b981]"></td>
-                <td class="p-6 text-center"><button onclick="deleteProduct(${idx})" class="text-red-400">🗑️ حذف</button></td>
+                <td class="p-6">
+                    <input type="number" onchange="updateQty(${idx}, this.value)" value="${p.qty || 0}" 
+                           class="w-20 p-2 bg-slate-50 border rounded-xl text-center outline-none focus:border-[#10b981]">
+                </td>
+                <td class="p-6 text-center">
+                    <div class="flex items-center justify-center gap-4">
+                        <button onclick="printPriceTag(${idx})" class="text-[#10b981] hover:scale-110 transition-transform flex items-center gap-1 font-bold text-sm">
+                            🏷️ طباعة
+                        </button>
+                        <button onclick="deleteProduct(${idx})" class="text-red-400 hover:scale-110 transition-transform flex items-center gap-1 font-bold text-sm">
+                            🗑️ حذف
+                        </button>
+                    </div>
+                </td>
             </tr>`;
         }).join('');
 }
 
+// --- [5] دالة طباعة التسعيرة (الجديدة) ---
+function printPriceTag(index) {
+    const p = products[index];
+    const printWindow = window.open('', '', 'width=600,height=400');
+    
+    printWindow.document.write(`
+        <html dir="rtl">
+        <head>
+            <title>طباعة تسعيرة - ${p.name}</title>
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+                body { font-family: 'Cairo', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: white; }
+                .tag-container { border: 3px solid #10b981; padding: 30px; border-radius: 20px; text-align: center; width: 350px; }
+                .logo-text { color: #10b981; font-weight: bold; font-size: 16px; margin-bottom: 10px; }
+                .product-name { font-size: 28px; font-weight: bold; color: #1e293b; margin: 15px 0; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+                .product-price { font-size: 40px; color: #10b981; font-weight: 900; }
+                .currency { font-size: 18px; color: #64748b; }
+                .barcode-area { margin-top: 20px; font-size: 12px; color: #94a3b8; letter-spacing: 2px; }
+            </style>
+        </head>
+        <body>
+            <div class="tag-container">
+                <div class="logo-text">🌿 نظام حصاد</div>
+                <div class="product-name">${p.name}</div>
+                <div class="product-price">${p.price} <span class="currency">ر.س</span></div>
+                <div class="barcode-area">|||| || |||| ||| <br> ${p.barcode || '000000'}</div>
+            </div>
+            <script>
+                window.onload = function() {
+                    window.print();
+                    setTimeout(() => { window.close(); }, 500);
+                }
+            </script>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+
+// باقي الدوال الخاصة بالتصنيفات والمستمعات كما هي...
 function renderManageCatsList() {
     const list = document.getElementById('cats-management-list');
     if (!list) return;
@@ -93,7 +146,6 @@ function saveAndRefresh() {
     updateStats(); renderTable(); updateCatSelect();
 }
 
-// --- [5] المستمعات وتحديث الصفحة ---
 document.addEventListener('DOMContentLoaded', () => {
     const catForm = document.getElementById('category-form');
     if(catForm) {

@@ -10,7 +10,7 @@ function createWindow () {
   })
 
   // تأكدي أن اسم الملف هنا هو نفس اسم ملف الـ HTML الخاص بكِ
-  win.loadFile('homepage.html')
+  win.loadFile('index.html')
 }
 
 app.whenReady().then(createWindow)

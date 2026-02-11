@@ -1,3 +1,8 @@
+const settings = JSON.parse(localStorage.getItem('hasad_settings')) || {};
+// لو عندك عنصر اسمه side-shop-name غيري نصه
+if(settings.name && document.getElementById('side-shop-name')) {
+    document.getElementById('side-shop-name').innerText = settings.name;
+}
 // --- [1] تهيئة البيانات الأساسية ---
 // جلب البيانات من ذاكرة المتصفح أو بدء مصفوفات فارغة
 let categories = JSON.parse(localStorage.getItem('hasad_categories')) || [];

@@ -1,4 +1,9 @@
-// --- [1] تهيئة البيانات ---
+const settings = JSON.parse(localStorage.getItem('hasad_settings')) || {};
+// لو عندك عنصر اسمه side-shop-name غيري نصه
+if(settings.name && document.getElementById('side-shop-name')) {
+    document.getElementById('side-shop-name').innerText = settings.name;
+}
+ // --- [1] تهيئة البيانات ---
 let categories = JSON.parse(localStorage.getItem('hasad_categories')) || [];
 let products = JSON.parse(localStorage.getItem('hasad_products')) || [];
 let activeFilter = 'الكل'; 
@@ -68,46 +73,35 @@ function renderTable() {
         }).join('');
 }
 
-// --- [5] دالة طباعة التسعيرة (الجديدة) ---
+// --- [5] دالة طباعة التسعيرة بالباركود الحقيقي ---
 function printPriceTag(index) {
     const p = products[index];
-    const printWindow = window.open('', '', 'width=600,height=400');
-    
-    printWindow.document.write(`
-        <html dir="rtl">
-        <head>
-            <title>طباعة تسعيرة - ${p.name}</title>
-            <style>
-                @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
-                body { font-family: 'Cairo', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: white; }
-                .tag-container { border: 3px solid #10b981; padding: 30px; border-radius: 20px; text-align: center; width: 350px; }
-                .logo-text { color: #10b981; font-weight: bold; font-size: 16px; margin-bottom: 10px; }
-                .product-name { font-size: 28px; font-weight: bold; color: #1e293b; margin: 15px 0; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-                .product-price { font-size: 40px; color: #10b981; font-weight: 900; }
-                .currency { font-size: 18px; color: #64748b; }
-                .barcode-area { margin-top: 20px; font-size: 12px; color: #94a3b8; letter-spacing: 2px; }
-            </style>
-        </head>
-        <body>
-            <div class="tag-container">
-                <div class="logo-text">🌿 نظام حصاد</div>
-                <div class="product-name">${p.name}</div>
-                <div class="product-price">${p.price} <span class="currency">ر.س</span></div>
-                <div class="barcode-area">|||| || |||| ||| <br> ${p.barcode || '000000'}</div>
-            </div>
-            <script>
-                window.onload = function() {
-                    window.print();
-                    setTimeout(() => { window.close(); }, 500);
-                }
-            </script>
-        </body>
-        </html>
-    `);
-    printWindow.document.close();
+    const barcodeValue = p.barcode ? p.barcode.trim() : "000000";
+    const scanableCode = `*${barcodeValue}*`;
+
+    const win = window.open('', '', 'height=500,width=500');
+    win.document.write('<html><head><title>طباعة تسعيرة</title>');
+    win.document.write('<style>');
+    win.document.write('@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Libre+Barcode+39&display=swap");');
+    win.document.write('body { font-family: "Cairo", sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: white; direction: rtl; }');
+    win.document.write('.tag-container { border: 3px solid #10b981; padding: 25px; border-radius: 20px; text-align: center; width: 320px; }');
+    win.document.write('.product-name { font-size: 24px; font-weight: bold; color: #1e293b; margin: 10px 0; }');
+    win.document.write('.product-price { font-size: 38px; color: #10b981; font-weight: 900; }');
+    win.document.write('.barcode-visual { font-family: "Libre Barcode 39", cursive; font-size: 60px; margin-top: 15px; display: block; line-height: 1; }');
+    win.document.write('</style></head><body>');
+    win.document.write('<div class="tag-container">');
+    win.document.write('<div style="color: #10b981; font-weight: bold;">🌿 نظام حصاد</div>');
+    win.document.write('<div class="product-name">' + p.name + '</div>');
+    win.document.write('<div class="product-price">' + p.price + ' <span style="font-size: 16px;">ر.س</span></div>');
+    win.document.write('<div class="barcode-visual">' + scanableCode + '</div>');
+    win.document.write('<div style="color: #94a3b8; font-size: 12px;">' + barcodeValue + '</div>');
+    win.document.write('</div>');
+    win.document.write('<script>window.onload = function() { window.print(); setTimeout(() => { window.close(); }, 500); }</script>');
+    win.document.write('</body></html>');
+    win.document.close();
 }
 
-// باقي الدوال الخاصة بالتصنيفات والمستمعات كما هي...
+// --- الدوال الإضافية ---
 function renderManageCatsList() {
     const list = document.getElementById('cats-management-list');
     if (!list) return;
@@ -151,8 +145,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if(catForm) {
         catForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            categories.push(document.getElementById('cat-name-input').value.trim());
-            saveAndRefresh();
+            const val = document.getElementById('cat-name-input').value.trim();
+            if(val) { categories.push(val); saveAndRefresh(); }
             document.getElementById('cat-name-input').value = ""; closeCatModal();
         });
     }

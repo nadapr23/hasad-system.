@@ -1,109 +1,0 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+39&display=swap" rel="stylesheet">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>حصاد - إدارة الأصناف</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body class="bg-[#f8fafc] min-h-screen flex font-['Cairo'] overflow-x-hidden">
-
-    <aside class="w-72 bg-[#1e293b] h-screen fixed right-0 top-0 text-white p-6 shadow-xl z-40">
-        <div class="mb-10 flex items-center gap-3">
-            <img src="./للخلفيه الغامق.png" class="w-10 h-10 brightness-0 invert" alt="لوجو">
-            <h2 class="text-2xl font-bold">حصاد</h2>
-        </div>
-        <nav class="space-y-4">
-            <a href="index.html" class="block p-4 hover:bg-slate-800 rounded-2xl transition">🏠 الرئيسية</a>
-            <a href="pos.html" class="block p-4 hover:bg-slate-800 rounded-2xl transition">🧾 شاشة البيع</a>
-            <a href="#" class="block p-4 bg-[#10b981] rounded-2xl font-bold shadow-lg">📦 إدارة الأصناف</a>
-        </nav>
-    </aside>
-
-    <main class="mr-72 p-10 w-full relative z-10">
-        <div class="mb-10 flex justify-between items-end">
-            <div>
-                <h1 class="text-4xl font-bold text-[#1e293b] mb-2">إدارة الأصناف 📦</h1>
-                <p class="text-slate-500 text-lg">أضف التصنيفات أولاً، ثم اربط بها منتجاتك الجديدة.</p>
-            </div>
-            <div class="flex gap-4">
-                <button onclick="openCatModal()" class="bg-white text-[#1e293b] border border-slate-200 px-6 py-4 rounded-2xl font-bold hover:bg-slate-50 transition-all shadow-sm">+ إضافة تصنيف</button>
-                <button onclick="openModal()" class="bg-[#10b981] text-white px-8 py-4 rounded-2xl font-bold shadow-lg hover:scale-105 transition-all">+ إضافة منتج جديد</button>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-3 gap-6 mb-10">
-            <div onclick="setFilter('الكل')" class="bg-white p-8 rounded-[35px] shadow-sm border border-slate-50 text-center cursor-pointer transition-all hover:border-[#10b981] hover:bg-emerald-50/30">
-                <p class="text-slate-400 text-sm mb-1 font-bold">إجمالي الأصناف</p>
-                <p id="total-products" class="text-4xl font-bold text-[#1e293b]">0</p>
-            </div>
-            <div class="bg-white p-8 rounded-[35px] shadow-sm border border-slate-50 text-center border-b-4 border-b-[#10b981]">
-                <p class="text-slate-400 text-sm mb-1 font-bold">التصنيفات النشطة (<span id="total-categories">0</span>)</p>
-                <button onclick="openManageCatsModal()" class="text-[#10b981] text-sm font-bold underline hover:text-emerald-700 transition">إدارة وتعديل التصنيفات ⚙️</button>
-                <div id="categories-filter-container" class="flex flex-wrap gap-2 justify-center mt-3 border-t pt-3 border-slate-50"></div>
-            </div>
-            <div onclick="filterOutOfStock()" class="bg-white p-8 rounded-[35px] shadow-sm border border-slate-50 text-center cursor-pointer hover:bg-red-50 transition-all border-b-4 border-b-red-500">
-                <p class="text-slate-400 text-sm mb-1 font-bold text-red-500">نفذت من المخزون</p>
-                <p id="out-of-stock" class="text-4xl font-bold text-red-500">0</p>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-[40px] shadow-sm border border-slate-50 overflow-hidden">
-            <table class="w-full text-right">
-                <thead class="bg-slate-50/50 border-b border-slate-100">
-                    <tr>
-                        <th class="p-6 text-slate-500 font-bold">المنتج</th>
-                        <th class="p-6 text-slate-500 font-bold">التصنيف</th>
-                        <th class="p-6 text-slate-500 font-bold">الباركود</th>
-                        <th class="p-6 text-slate-500 font-bold">السعر</th>
-                        <th class="p-6 text-slate-500 font-bold">الكمية</th> 
-                        <th class="p-6 text-slate-500 font-bold text-center">الإجراءات</th>
-                    </tr>
-                </thead>
-                <tbody id="inventory-table"></tbody>
-            </table>
-        </div>
-    </main>
-
-    <div id="add-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[999] flex items-center justify-center p-6">
-        <div class="bg-white w-[650px] rounded-[45px] p-12 shadow-2xl relative">
-            <h2 class="text-3xl font-bold text-[#1e293b] mb-8">إضافة منتج جديد 🏷️</h2>
-            <form id="product-form" class="space-y-6">
-                <div class="grid grid-cols-2 gap-6">
-                    <div><label class="block text-slate-400 mb-2 mr-2 text-sm font-bold">اسم المنتج</label><input type="text" id="prod-name" class="w-full p-4 bg-slate-50 rounded-2xl border outline-none focus:border-[#10b981]" required></div>
-                    <div><label class="block text-slate-400 mb-2 mr-2 text-sm font-bold">التصنيف</label><select id="prod-category" class="w-full p-4 bg-slate-50 rounded-2xl border outline-none cursor-pointer"></select></div>
-                </div>
-                <div class="grid grid-cols-2 gap-6">
-                    <div><label class="block text-slate-400 mb-2 mr-2 text-sm font-bold">السعر</label><input type="number" id="prod-price" step="0.01" class="w-full p-4 bg-slate-50 rounded-2xl border outline-none" required></div>
-                    <div><label class="block text-slate-400 mb-2 mr-2 text-sm font-bold">الكمية</label><input type="number" id="prod-qty" class="w-full p-4 bg-slate-50 rounded-2xl border outline-none" value="0" required></div>
-                </div>
-                <div class="relative"><label class="block text-slate-400 mb-2 mr-2 text-sm font-bold">الباركود</label><input type="text" id="prod-barcode" class="w-full p-4 bg-slate-50 rounded-2xl border border-transparent focus:border-[#10b981] outline-none"></div>
-                <div class="flex gap-4 pt-8"><button type="submit" class="flex-1 bg-[#10b981] text-white py-5 rounded-[25px] font-bold">حفظ</button><button type="button" onclick="closeModal()" class="flex-1 bg-slate-50 text-slate-400 py-5 rounded-[25px] font-bold">إلغاء</button></div>
-            </form>
-        </div>
-    </div>
-
-    <div id="manage-cats-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[1100] flex items-center justify-center p-6">
-        <div class="bg-white w-[500px] rounded-[45px] p-10 shadow-2xl relative">
-            <h2 class="text-2xl font-bold text-[#1e293b] mb-6">قائمة التصنيفات 📂</h2>
-            <div id="cats-management-list" class="space-y-3 max-h-80 overflow-y-auto p-2"></div>
-            <button onclick="closeManageCatsModal()" class="w-full mt-8 bg-slate-100 text-slate-500 py-4 rounded-2xl font-bold">إغلاق</button>
-        </div>
-    </div>
-
-    <div id="cat-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[1000] flex items-center justify-center p-6">
-        <div class="bg-white w-[480px] rounded-[45px] p-12 shadow-2xl border-t-8 border-[#1e293b]">
-            <h2 class="text-3xl font-bold text-[#1e293b] mb-8">إضافة تصنيف 📂</h2>
-            <form id="category-form" class="space-y-6">
-                <input type="text" id="cat-name-input" class="w-full p-4 bg-slate-50 rounded-2xl border outline-none focus:border-[#10b981]" placeholder="اسم التصنيف..." required>
-                <div class="flex gap-4"><button type="submit" class="flex-1 bg-[#1e293b] text-white py-4 rounded-2xl font-bold">حفظ</button><button type="button" onclick="closeCatModal()" class="flex-1 bg-slate-100 py-4 rounded-2xl font-bold">تراجع</button></div>
-            </form>
-        </div>
-    </div>
-
-    <script src="قائمة الأصناف.js" defer></script>
-</body>
-</html>
